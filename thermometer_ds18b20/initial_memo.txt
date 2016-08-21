@@ -1,17 +1,66 @@
+[termo mater]
+=====
 add text to [/boot/config.txt]
-
 -----
 dtoverlay=w1-gpio-pullup,gpiopin=4
 -----
 
-
 add text to [/etc/modules]
-
 -----
 w1-gpio
 w1-therm
 -----
 
-
 and reboot
+=====
+
+[focuslight]
+=====
+参考サイト
+[http://jimaoka.hatenablog.jp/entry/raspi-sensor]
+
+[rubyのインストール]
+### システム全体でインストールする
+$ sudo su
+root$ apt-get install autoconf bison build-essential libssl-dev libyaml-dev libreadline6-dev zlib1g-dev libncurses5-dev libffi-dev libgdbm3 libgdbm-dev
+root$ git clone https://github.com/sstephenson/rbenv.git /usr/local/rbenv
+root$ git clone https://github.com/sstephenson/ruby-build.git /usr/local/rbenv/plugins/ruby-build
+root$ vim /etc/profile.d/rbenv.sh
+export RBENV_ROOT=/usr/local/rbenv
+export PATH="/usr/local/rbenv/shims:/usr/local/rbenv/bin:$PATH"
+eval "$(rbenv init -)"
+root$ visudo
+- Defaults        env_reset
+- Defaults        secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
++ Defaults        env_keep +=  "PATH"
+root$ source /etc/profile.d/rbenv.sh
+root$ which rbenv
+/usr/local/rbenv/bin/rbenv
+root$ rbenv install 2.2.5
+Downloading ruby-2.2.5.tar.bz2...
+-> https://cache.ruby-lang.org/pub/ruby/2.2/ruby-2.2.5.tar.bz2
+Installing ruby-2.2.5...
+Installed ruby-2.2.5 to /usr/local/rbenv/versions/2.2.5
+root$ rbenv global 2.2.5
+root$ ruby -v
+ruby 2.2.5p319 (2016-04-26 revision 54774) [armv7l-linux-eabihf]
+root$ exit
+$ source /etc/profile.d/rbenv.sh
+$ ruby -v
+ruby 2.2.5p319 (2016-04-26 revision 54774) [armv7l-linux-eabihf]
+
+
+[focuslightのインストール]
+### 必要なパッケージのインストール
+sudo apt-get install rrdtool libmysqlclient-dev librrd-ruby librrd4 librrd-dev libsqlite3-dev sqlite3
+
+### bundler
+sudo gem install bundler
+
+### bundle install
+git clone https://github.com/tagomoris/focuslight.git
+cd focuslight
+bundle
+bundle exec focuslight init
+=====
 

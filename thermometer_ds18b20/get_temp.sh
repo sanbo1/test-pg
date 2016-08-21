@@ -12,3 +12,8 @@ if [ $(echo "$line" | grep -c "t=") -eq 1 ]; then
 fi
 done
 
+### crontab -e
+# #save temp (every 1 hour)
+# 00 * * * * /home/pi/test-pg/thermometer_ds18b20/get_temp.sh >> /home/pi/test-pg/thermometer_ds18b20/temp.log
+
+
