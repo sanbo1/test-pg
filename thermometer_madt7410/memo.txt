@@ -1,0 +1,11 @@
+# raspi-config にて I2C を有効化する
+
+# I2C用ツールのインストール
+sudo apt-get install i2c-tools
+
+# I2C モジュールの確認
+sudo i2cdetect -y 1
+
+# marutsu で販売の MADT7410 について
+A0 と A1 を GND にショートさせないと I2C のアドレスがちょこちょこ変わってしまう。
+
