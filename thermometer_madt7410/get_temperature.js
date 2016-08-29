@@ -22,8 +22,25 @@ readValue = function() {
 		}
 		value = temp * 0.0625;
 		console.log("[" + nowTime + "] temp=" + value);
-		fs.appendFileSync(LOG_FILE, "[" + nowTime + "] temp=" + value + "\n", "utf8");
-		fs.appendFileSync(LOG_CSV_FILE, value + ", ", "utf8");
+
+		// 小数点第2位で四捨五入
+		var value2 = value * 10;
+		var value2 = Math.round(value2) / 10;
+		console.log("[" + nowTime + "] temp=" + value2);
+
+		// 小数点第2位で切り上げ
+		var value3 = value * 10;
+		var value3 = Math.ceil(value3) / 10;
+		console.log("[" + nowTime + "] temp=" + value3);
+
+		// 小数点第2位で切り捨て
+		var value4 = value * 10;
+		var value4 = Math.floor(value4) / 10;
+		console.log("[" + nowTime + "] temp=" + value4);
+
+		// ファイル書き込み
+//		fs.appendFileSync(LOG_FILE, "[" + nowTime + "] temp=" + value + "\n", "utf8");
+//		fs.appendFileSync(LOG_CSV_FILE, value + ", ", "utf8");
 	});
 };
 
