@@ -1,15 +1,12 @@
-require('date-utils');
-var fs = require('fs');
+//var fs = require('fs');
 
 var dt = new Date();
-var nowTime = dt.toFormat("YYYY/MM/DD HH24:MI:SS");
-var nowDay = dt.toFormat("YYYYMMDD");
+var nowDay = dt.getFullYear() + ('0' + (dt.getMonth() + 1)).slice(-2) + ('0' + dt.getDate()).slice(-2);
 
 var LOG_DIR = "../logs";
 var LOG_FILE = LOG_DIR + "/" + nowDay + ".log";
 var LOG_CSV_FILE = LOG_DIR + "/" + nowDay + ".csv";
 
-//var sales1 = {4:10, 5:30, 6:40, 7:30, 8:60, 9:50};
 var timeFormat =
 [
 	"00:00","00:10","00:20","00:30","00:40","00:50",
@@ -40,11 +37,11 @@ var timeFormat =
 
 ccchart.base('', {config : {
 	"type" : "line", //チャート種類
-	"useVal" : "yes", //値を表示
+	"useVal" : "no", //値を表示
 
 	"xScaleFont" : "100 16px 'meiryo'", //水平軸目盛フォント
-	"xScaleRotate" : "-90", //水平軸目盛傾き
-	"xScaleSkip" : "6", //水平軸目盛スキップ数
+	"xScaleRotate" : "45", //水平軸目盛傾き
+	"xScaleSkip" : "18", //水平軸目盛スキップ数
 	"yScaleFont" : "100 16px 'meiryo'", //垂直軸目盛フォント
 
 	"useHanrei" : "yes", //凡例の使用有無
@@ -75,17 +72,67 @@ ccchart.base('', {config : {
 var show_chart = {
 	"config" : {
 		"colorSet" : ["red"], //データ列の色
-		"minY" : 0, //Y軸最小値
-		"maxY" : 100, //Y軸最大値
+		"minY" : 20, //Y軸最小値
+		"maxY" : 40, //Y軸最大値
 		"axisXLen" : 10, //水平目盛線の本数
 		"roundDigit":0, // 軸目盛値の端数処理
-		"unit":"C", // 単位
+		"unit":"度", // 単位
 	},
 	"data" : [
 		["時間"],
 		[nowDay],
 	 ]
 };
+
+///////////////////////////////////////////
+//CSVファイルを読み込む関数getCSV()の定義
+function getCSV(){
+    var req = new XMLHttpRequest(); // HTTPでファイルを読み込むためのXMLHttpRrequestオブジェクトを生成
+    req.open("get", "get-csv", true); // アクセスするファイルを指定
+    req.send(null); // HTTPリクエストの発行
+
+    // レスポンスが返ってきたらconvertCSVtoArray()を呼ぶ
+    req.onload = function(){
+		convertCSVtoArray(req.responseText); // 渡されるのは読み込んだCSVデータ
+    }
+}
+
+
+// 読み込んだCSVデータを二次元配列に変換する関数convertCSVtoArray()の定義
+function convertCSVtoArray(str){ // 読み込んだCSVデータが文字列として渡される
+    var result = []; // 最終的な二次元配列を入れるための配列
+    var tmp = str.split("\n"); // 改行を区切り文字として行を要素とした配列を生成
+
+    // 各行ごとにカンマで区切った文字列を要素とした二次元配列を生成
+    for(var i=0;i<tmp.length;++i){
+        result[i] = tmp[i].split(',');
+		console.log(result[i]); // 渡されるのは読み込んだCSVデータ
+    }
+
+    //alert(result[1][2]); // 300yen
+		console.log(result[0]); // 渡されるのは読み込んだCSVデータ
+
+//var csvData = [22, 23, 24, 25];
+//var csvData = req.responseText;
+var csvData = result[0];
+var i = 0;
+for (key in timeFormat){
+	i++;
+	show_chart["data"][0][i] = timeFormat[key];
+	show_chart["data"][1][i] = csvData[key];
+}
+
+// 第一引数：canvasのID、第二引数：設定とデータが入ったハッシュ
+ccchart.init("show_chart", show_chart);
+
+}
+
+
+getCSV(); //最初に実行される
+///////////////////////////////////////////
+
+
+
 
 // チャート用データ設定
 /*
@@ -98,8 +145,8 @@ for (key in sales1){
 }
 */
 /*
-*/
-var csvData = fs.readFileSync(LOG_CSV_FILE);
+//var csvData = fs.readFileSync(LOG_CSV_FILE);
+var csvData = [22, 23, 24, 25];
 var i = 0;
 for (key in timeFormat){
 	i++;
@@ -109,5 +156,6 @@ for (key in timeFormat){
 
 // 第一引数：canvasのID、第二引数：設定とデータが入ったハッシュ
 ccchart.init("show_chart", show_chart);
+*/
 
 
