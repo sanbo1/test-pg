@@ -4,7 +4,7 @@
 MYPATH=$(cd $(dirname $(readlink -f $0)); pwd);
 
 # startup file
-FILE_NM="start_my_prg"
+FILE_NM="start_my_prg2"
 
 ### startup 用フォルダ
 TARGET="/etc/init.d/${FILE_NM}"

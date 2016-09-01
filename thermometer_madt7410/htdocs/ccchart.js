@@ -199,9 +199,9 @@ window.ccchart =
 
       //マーカーの幅または直径
       this.markerWidth = this.util.setConfigNum(this, 'markerWidth', this.op.config.markerWidth, this.gcf.markerWidth)
-      console.log(1,this.markerWidth)
+      //console.log(1,this.markerWidth)
       this.markerWidth = this.util.setConfigNum(this, 'markerWidth', this.markerWidth, this.lineWidth * 2 , 2)
-console.log(3,this.markerWidth)
+//console.log(3,this.markerWidth)
       if(this.useCss === 'yes'){
         this.bind('scroll', '_adjustcsspos');
         this.bind('load', '_adjustcsspos');

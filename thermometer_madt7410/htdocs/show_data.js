@@ -88,7 +88,11 @@ var show_chart = {
 //CSVファイルを読み込む関数getCSV()の定義
 function getCSV(){
     var req = new XMLHttpRequest(); // HTTPでファイルを読み込むためのXMLHttpRrequestオブジェクトを生成
-    req.open("get", "get-csv", true); // アクセスするファイルを指定
+
+	var target_date = "20160828";
+	var target_range = "2";
+
+    req.open("get", "get-csv?date=" + target_date + "&range=" + target_range, true); // アクセスするファイルを指定
     req.send(null); // HTTPリクエストの発行
 
     // レスポンスが返ってきたらconvertCSVtoArray()を呼ぶ
@@ -100,26 +104,39 @@ function getCSV(){
 
 // 読み込んだCSVデータを二次元配列に変換する関数convertCSVtoArray()の定義
 function convertCSVtoArray(str){ // 読み込んだCSVデータが文字列として渡される
+	//console.log("---------str---------");
+	//console.log(str);
+
     var result = []; // 最終的な二次元配列を入れるための配列
     var tmp = str.split("\n"); // 改行を区切り文字として行を要素とした配列を生成
 
     // 各行ごとにカンマで区切った文字列を要素とした二次元配列を生成
     for(var i=0;i<tmp.length;++i){
         result[i] = tmp[i].split(',');
-		console.log(result[i]); // 渡されるのは読み込んだCSVデータ
+		//console.log(result[i]); // 渡されるのは読み込んだCSVデータ
     }
 
     //alert(result[1][2]); // 300yen
-		console.log(result[0]); // 渡されるのは読み込んだCSVデータ
+	console.log(result); // 渡されるのは読み込んだCSVデータ
+	//console.log(result.length); // 渡されるのは読み込んだCSVデータ
 
 //var csvData = [22, 23, 24, 25];
 //var csvData = req.responseText;
-var csvData = result[0];
+//var csvData = result[0];
 var i = 0;
 for (key in timeFormat){
 	i++;
 	show_chart["data"][0][i] = timeFormat[key];
-	show_chart["data"][1][i] = csvData[key];
+	//show_chart["data"][1][i] = csvData[key];
+}
+for(i=0; i < result.length - 1; i++) {
+	//show_chart["data"][i+1] = "20160831-" + i;
+	var label = "20160831-" + i;
+	show_chart["data"][i+1] = [];
+	show_chart["data"][i+1][0] = label;
+	for(var j=0; j < result[i].length - 1; j++) {
+		show_chart["data"][i+1][j+1] = result[i][j];
+	}
 }
 
 // 第一引数：canvasのID、第二引数：設定とデータが入ったハッシュ
@@ -130,32 +147,4 @@ ccchart.init("show_chart", show_chart);
 
 getCSV(); //最初に実行される
 ///////////////////////////////////////////
-
-
-
-
-// チャート用データ設定
-/*
-var sales1 = {4:10, 5:30, 6:40, 7:30, 8:60, 9:50};
-var i = 0;
-for (key in sales1){
-	i++;
-	show_chart["data"][0][i] = key;
-	show_chart["data"][1][i] = sales1[key];
-}
-*/
-/*
-//var csvData = fs.readFileSync(LOG_CSV_FILE);
-var csvData = [22, 23, 24, 25];
-var i = 0;
-for (key in timeFormat){
-	i++;
-	show_chart["data"][0][i] = timeFormat[key];
-	show_chart["data"][1][i] = csvData[key];
-}
-
-// 第一引数：canvasのID、第二引数：設定とデータが入ったハッシュ
-ccchart.init("show_chart", show_chart);
-*/
-
 
