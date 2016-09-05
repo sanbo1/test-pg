@@ -1,7 +1,7 @@
 <html>
 	<head>
 		<title>温度グラフ</title>
-		<meta charse="utf-8" />
+		<meta charset="utf-8" />
 
 		<!-- グラフ描画ライブラリ ccchart -->
 		<script type="text/javascript" language="javascript"  src="./ccchart.js" charset="utf-8"></script>
@@ -10,7 +10,7 @@
 		<script type="text/javascript" language="javascript"  src="./show_data.js" charset="utf-8"></script>
 	</head>
 
-	<body onLoad="showTargetDate();getCSV(null)">
+	<body onLoad="initMenu();drawGraph(null)">
 		<center><h1>温度グラフ</h1></center>
 		<hr>
 		<form name="targetDate">
@@ -29,14 +29,11 @@
 						</select>
 						日分
 					</td>
-					<!--
-					<td>(「基準日」を含む)</td>
-					-->
 				</tr>
 				<tr>
 					<td></td>
 					<td>
-						<input type="button" value="表示" onclick="showGraph()">
+						<input type="button" value="表示" onclick="drawTargetGraph()">
 					</td>
 				</tr>
 			</table>

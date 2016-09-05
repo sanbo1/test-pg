@@ -7,9 +7,7 @@
 var dt = new Date();
 var nowDay = dt.getFullYear() + ('0' + (dt.getMonth() + 1)).slice(-2) + ('0' + dt.getDate()).slice(-2);
 
-var LOG_DIR = "../logs";
-var LOG_FILE = LOG_DIR + "/" + nowDay + ".log";
-var LOG_CSV_FILE = LOG_DIR + "/" + nowDay + ".csv";
+var MAX_RANGE = 10;		// グラフの最大同時表数
 
 var timeFormat =
 [
@@ -71,11 +69,9 @@ ccchart.base('', {config : {
 	"lineWidth" : "1", //ラインの太さ
 }});
 
-
-
 var show_chart = {
 	"config" : {
-		"colorSet" : ["red", "blue","yellow","#FF9114","#3CB000","#00A8A2","#0036C0","#C328FF","#FF34C0"], //データ列の色
+		"colorSet" : ["red","blue","yellow","green","#FF9114","#3CB000","#00A8A2","#0036C0","#C328FF","#FF34C0"], //データ列の色
 		"minY" : 20, //Y軸最小値
 		"maxY" : 40, //Y軸最大値
 		"axisXLen" : 10, //水平目盛線の本数
@@ -84,27 +80,37 @@ var show_chart = {
 	},
 	"data" : [
 		["時間"],
-		//[nowDay],
 	 ]
 };
 
 ////////////
 // main
 ////////////
-///////////////////////////////////////////
-//CSVファイルを読み込む関数getCSV()の定義
-///////////////////////////////////////////
-function showTargetDate() {
-	//console.log("call showTargetDate()");
+// 表示画面のプルダウンメニューの設定
+function initMenu() {
+	//console.log("call initMenu()");
 
-    var req = new XMLHttpRequest(); // HTTPでファイルを読み込むためのXMLHttpRrequestオブジェクトを生成
+	///////////////////////////////////////////////
+	// 表示する日数選択用プルダウンの設定（固定値）
+	///////////////////////////////////////////////
+	var target_range = document.forms.targetDate.target_range;
+	target_range.options.length = 0;
+	for (var i=0; i < MAX_RANGE; i++) {
+		target_range.options[i] = new Option(i+1);
+	}
 
-    req.open("get", "get-csv-list", true); // アクセスするファイルを指定
-    req.send(null); // HTTPリクエストの発行
+	///////////////////////////////////////////////
+	// 表示する対象日選択用プルダウンの設定
+	///////////////////////////////////////////////
+	var req = new XMLHttpRequest(); // JSでHTTPを扱うためのXMLHttpRrequestオブジェクトを生成
 
-    // レスポンスが返ってきたらプルダウンリストに設定
-    req.onload = function(){
-		console.log(req.responseText); // 渡されるのは読み込んだCSVデータ
+	// サーバに保存されているCSVファイルリストの取得
+	req.open("get", "get-csv-list", true);
+	req.send(null); // HTTPリクエストの発行
+
+	// レスポンスが返ってきたらプルダウンリストに設定
+	req.onload = function(){
+		//console.log(req.responseText); // 渡されるのは読み込んだファイルリスト
 
 		var file_list = JSON.parse(req.responseText);
 		var target_date = document.forms.targetDate.target_date;
@@ -112,96 +118,75 @@ function showTargetDate() {
 		for (var i=0; i < file_list.length; i++) {
 			target_date.options[i] = new Option(file_list[i]);
 		}
-    }
-
-	var target_range = document.forms.targetDate.target_range;
-	target_range.options.length = 0;
-	for (var i=0; i < 10; i++) {
-		target_range.options[i] = new Option(i+1);
 	}
+
 }
 
-
-function showGraph(target_date, target_range) {
+// 指定日付でのグラフの再描画（「表示」ボタン押下時の処理）
+function drawTargetGraph() {
+	// 画面で選択中の値取得
 	var t_date = document.targetDate.target_date;
 	var t_range = document.targetDate.target_range;
 
 	var target_date = t_date.options[t_date.selectedIndex].text;
 	var target_range = t_range.options[t_range.selectedIndex].text;
 
-	console.log("call showGraph(" + target_date + ", " + target_range + ")");
+	//console.log("call drawTargetGraph(" + target_date + ", " + target_range + ")");
 
-	getCSV(null);
+	drawGraph(target_date, target_range);
 }
 
-function getCSV(t_d){
-    var req = new XMLHttpRequest(); // HTTPでファイルを読み込むためのXMLHttpRrequestオブジェクトを生成
+// グラフの描画
+function drawGraph(target_date, target_range){
+	var req = new XMLHttpRequest(); // JSでHTTPを扱うためのXMLHttpRrequestオブジェクトを生成
 
-	console.log(t_d);
-
-	var target_date = "20160828";
-	var target_range = "2";
-
-	if (t_d == undefined) {
+	// 日付の指定なしの場合は本日日付
+	if (target_date == undefined || target_date == null) {
 		target_date = nowDay;
 	}
 
-	console.log(target_date);
+	// 描画数の指定なしの場合は指定日のみ描画
+	if (target_range == undefined || target_range == null) {
+		target_range = "1";
+	}
 
-    req.open("get", "get-csv?date=" + target_date + "&range=" + target_range, true); // アクセスするファイルを指定
-    req.send(null); // HTTPリクエストの発行
+	// サーバへデータ取得要求（HTTP Get）
+	req.open("get", "get-csv?date=" + target_date + "&range=" + target_range, true); // アクセスするファイルを指定
+	req.send(null); // HTTPリクエストの発行
 
-    // レスポンスが返ってきたらconvertCSVtoArray()を呼ぶ
-    req.onload = function(){
-		convertCSVtoArray(req.responseText); // 渡されるのは読み込んだCSVデータ
-    }
+	// レスポンスが返ってきたらグラフ描画処理
+	req.onload = function(){
+		var graph_data = setCSVtoGraphData(req.responseText); // 渡されるのは読み込んだCSVデータ
+
+		// グラフ描画 -> 第一引数：canvasのID、第二引数：設定とデータが入ったハッシュ
+		ccchart.init("show_chart", graph_data);
+	}
 }
 
 
-// 読み込んだCSVデータを二次元配列に変換する関数convertCSVtoArray()の定義
-function convertCSVtoArray(str){ // 読み込んだCSVデータが文字列として渡される
-	//console.log("---------str---------");
-	//console.log(str);
+// 読み込んだCSVデータをグラフ描画用データに格納
+function setCSVtoGraphData(str){ // 読み込んだCSVデータが文字列として渡される
 
-    var result = []; // 最終的な二次元配列を入れるための配列
-    var tmp = str.split("\n"); // 改行を区切り文字として行を要素とした配列を生成
+	var result = []; // 最終的な二次元配列を入れるための配列
+	var tmp = str.split("\n"); // 改行を区切り文字として行を要素とした配列を生成
 
-    // 各行ごとにカンマで区切った文字列を要素とした二次元配列を生成
-    for(var i=0;i<tmp.length;++i){
-        result[i] = tmp[i].split(',');
-		//console.log(result[i]); // 渡されるのは読み込んだCSVデータ
-    }
+	// 各行ごとにカンマで区切った文字列を要素とした二次元配列を生成
+	for(var i=0;i<tmp.length;++i){
+		result[i] = tmp[i].split(',');
+	}
 
-    //alert(result[1][2]); // 300yen
-	console.log(result); // 渡されるのは読み込んだCSVデータ
-	//console.log(result.length); // 渡されるのは読み込んだCSVデータ
+	// show_chart.dataの初期化
+	show_chart.data = [["時間"],];
 
-	//var csvData = [22, 23, 24, 25];
-	//var csvData = req.responseText;
-	//var csvData = result[0];
+	// X軸データ
 	var i = 0;
 	for (key in timeFormat){
 		i++;
 		show_chart["data"][0][i] = timeFormat[key];
-		//show_chart["data"][1][i] = csvData[key];
 	}
+
+	// グラフ描画用データ
 	for(i=0; i < result.length - 1; i++) {
-		/*
-		//show_chart["data"][i+1] = "20160831-" + i;
-		var label = "20160831-" + i;
-		//target_day = new Date(target_day.setDate(target_day.getDate() - i));
-		show_chart["data"][i+1] = [];
-		show_chart["data"][i+1][0] = label;
-		for(var j=0; j < result[i].length - 1; j++) {
-			show_chart["data"][i+1][j+1] = result[i][j];
-		}
-		*/
-		/*
-		show_chart["data"][i+1] = [];
-		for(var j=0; j < result[i].length - 1; j++) {
-			show_chart["data"][i+1][j] = result[i][j];
-		}
-		*/
 		show_chart["data"][i+1] = [];
 		for(var j=0; j < timeFormat.length; j++) {
 			if (j < result[i].length - 1/* 最後の１文字は改行 */) {
@@ -211,11 +196,8 @@ function convertCSVtoArray(str){ // 読み込んだCSVデータが文字列と�
 			}
 		}
 	}
-	console.log(show_chart);
 
-	// 第一引数：canvasのID、第二引数：設定とデータが入ったハッシュ
-	ccchart.init("show_chart", show_chart);
-
+	return show_chart;
 }
 
 

@@ -36,8 +36,7 @@ app.use(express.static('htdocs'));
 app.get('/get-csv-list', function(req, res) {
 	//console.log("call (get-csv-list)");
 
-	// logs以下のcsvファイル名リストを取得
-	// 送信
+	// logs以下のcsvファイル名リストを取得 / 送信
 	fs.readdir(LOG_DIR, function(err, files){
 	    if (err) throw err;
 	    var fileList = [];
@@ -47,6 +46,13 @@ app.get('/get-csv-list', function(req, res) {
 	        fileList.push(file);
 	    });
 	    //console.log(fileList);
+
+		// 降順ソート
+		fileList.sort(function(a,b){
+			if( a > b ) return -1;
+			if( a < b ) return 1;
+			return 0;
+		});
 
 		res.send(fileList);
 	});
@@ -58,37 +64,32 @@ app.get('/get-csv', function(req, res) {
 	var target = req.query.date;
 	var range = req.query.range;
 
-	//console.log("target [" + target + "]");
-	//console.log("range [" + range + "]");
-
+	// 日付文字列を成形
 	var dateStr = target.substr(0, 4) + '-' + target.substr(4, 2) + '-' + target.substr(6,2);
+	// 文字列から日付型オブジェクト生成
 	var target_day = new Date(dateStr);
-	//console.log(target_day);
 
 	var ret = "";
 	for (var i = 0; i < range; i++) {
-		target_day = new Date(target_day.setDate(target_day.getDate() - i));
 		target = target_day.toFormat("YYYYMMDD");
 		var target_file = "./logs/" + target + ".csv";
+		//console.log("target file [" + target_file + "]");
 		if (isExistFile(target_file) == false) {
-			console.log("No such file [" + target_file + "]");
-			res.send(null);
+			// 対象日付のデータファイルなし
+			//console.log("No such file [" + target_file + "]");
+			// 対象日のデータ取得後、次のループ用に対象日を１日前にセットする
+			target_day = new Date(target_day.setDate(target_day.getDate() - 1));
 			continue;
 		}
 
-		//var test = fs.readFileSync("./logs/" + nowDay + ".csv");
-		//var test = fs.readFileSync("./logs/20160829.csv");
+		// 対象ファイルからデータ読み込み
 		var tmp = fs.readFileSync(target_file, 'utf8');
-		//ret = ret + tmp.replace(/\r?\n/g, '') + '\n';
-		//ret += tmp;
-		//ret += target + "," + tmp;
-		//console.log(tmp.toString);
-		//console.log(tmp);
+		// １日１行の形でCSVデータを追記していく
 		ret += target + "," + tmp.replace(/\r?\n/g, '') + '\n';
-	}
 
-	//console.log("---------ret---------");
-	//console.log(ret);
+		// 対象日のデータ取得後、次のループ用に対象日を１日前にセットする
+		target_day = new Date(target_day.setDate(target_day.getDate() - 1));
+	}
 
 	res.send(ret);
 });
