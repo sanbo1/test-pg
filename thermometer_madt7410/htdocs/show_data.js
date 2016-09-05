@@ -1,5 +1,9 @@
-//var fs = require('fs');
-
+/////////////////////////////////
+// thermometer_madt7410 index
+/////////////////////////////////
+////////////
+// define
+////////////
 var dt = new Date();
 var nowDay = dt.getFullYear() + ('0' + (dt.getMonth() + 1)).slice(-2) + ('0' + dt.getDate()).slice(-2);
 
@@ -71,7 +75,7 @@ ccchart.base('', {config : {
 
 var show_chart = {
 	"config" : {
-		"colorSet" : ["red"], //データ列の色
+		"colorSet" : ["red", "blue","yellow","#FF9114","#3CB000","#00A8A2","#0036C0","#C328FF","#FF34C0"], //データ列の色
 		"minY" : 20, //Y軸最小値
 		"maxY" : 40, //Y軸最大値
 		"axisXLen" : 10, //水平目盛線の本数
@@ -80,17 +84,69 @@ var show_chart = {
 	},
 	"data" : [
 		["時間"],
-		[nowDay],
+		//[nowDay],
 	 ]
 };
 
+////////////
+// main
+////////////
 ///////////////////////////////////////////
 //CSVファイルを読み込む関数getCSV()の定義
-function getCSV(){
+///////////////////////////////////////////
+function showTargetDate() {
+	//console.log("call showTargetDate()");
+
     var req = new XMLHttpRequest(); // HTTPでファイルを読み込むためのXMLHttpRrequestオブジェクトを生成
+
+    req.open("get", "get-csv-list", true); // アクセスするファイルを指定
+    req.send(null); // HTTPリクエストの発行
+
+    // レスポンスが返ってきたらプルダウンリストに設定
+    req.onload = function(){
+		console.log(req.responseText); // 渡されるのは読み込んだCSVデータ
+
+		var file_list = JSON.parse(req.responseText);
+		var target_date = document.forms.targetDate.target_date;
+		target_date.options.length = 0;
+		for (var i=0; i < file_list.length; i++) {
+			target_date.options[i] = new Option(file_list[i]);
+		}
+    }
+
+	var target_range = document.forms.targetDate.target_range;
+	target_range.options.length = 0;
+	for (var i=0; i < 10; i++) {
+		target_range.options[i] = new Option(i+1);
+	}
+}
+
+
+function showGraph(target_date, target_range) {
+	var t_date = document.targetDate.target_date;
+	var t_range = document.targetDate.target_range;
+
+	var target_date = t_date.options[t_date.selectedIndex].text;
+	var target_range = t_range.options[t_range.selectedIndex].text;
+
+	console.log("call showGraph(" + target_date + ", " + target_range + ")");
+
+	getCSV(null);
+}
+
+function getCSV(t_d){
+    var req = new XMLHttpRequest(); // HTTPでファイルを読み込むためのXMLHttpRrequestオブジェクトを生成
+
+	console.log(t_d);
 
 	var target_date = "20160828";
 	var target_range = "2";
+
+	if (t_d == undefined) {
+		target_date = nowDay;
+	}
+
+	console.log(target_date);
 
     req.open("get", "get-csv?date=" + target_date + "&range=" + target_range, true); // アクセスするファイルを指定
     req.send(null); // HTTPリクエストの発行
@@ -120,31 +176,46 @@ function convertCSVtoArray(str){ // 読み込んだCSVデータが文字列と�
 	console.log(result); // 渡されるのは読み込んだCSVデータ
 	//console.log(result.length); // 渡されるのは読み込んだCSVデータ
 
-//var csvData = [22, 23, 24, 25];
-//var csvData = req.responseText;
-//var csvData = result[0];
-var i = 0;
-for (key in timeFormat){
-	i++;
-	show_chart["data"][0][i] = timeFormat[key];
-	//show_chart["data"][1][i] = csvData[key];
-}
-for(i=0; i < result.length - 1; i++) {
-	//show_chart["data"][i+1] = "20160831-" + i;
-	var label = "20160831-" + i;
-	show_chart["data"][i+1] = [];
-	show_chart["data"][i+1][0] = label;
-	for(var j=0; j < result[i].length - 1; j++) {
-		show_chart["data"][i+1][j+1] = result[i][j];
+	//var csvData = [22, 23, 24, 25];
+	//var csvData = req.responseText;
+	//var csvData = result[0];
+	var i = 0;
+	for (key in timeFormat){
+		i++;
+		show_chart["data"][0][i] = timeFormat[key];
+		//show_chart["data"][1][i] = csvData[key];
 	}
+	for(i=0; i < result.length - 1; i++) {
+		/*
+		//show_chart["data"][i+1] = "20160831-" + i;
+		var label = "20160831-" + i;
+		//target_day = new Date(target_day.setDate(target_day.getDate() - i));
+		show_chart["data"][i+1] = [];
+		show_chart["data"][i+1][0] = label;
+		for(var j=0; j < result[i].length - 1; j++) {
+			show_chart["data"][i+1][j+1] = result[i][j];
+		}
+		*/
+		/*
+		show_chart["data"][i+1] = [];
+		for(var j=0; j < result[i].length - 1; j++) {
+			show_chart["data"][i+1][j] = result[i][j];
+		}
+		*/
+		show_chart["data"][i+1] = [];
+		for(var j=0; j < timeFormat.length; j++) {
+			if (j < result[i].length - 1/* 最後の１文字は改行 */) {
+				show_chart["data"][i+1][j] = result[i][j];
+			} else {
+				show_chart["data"][i+1][j] = null;
+			}
+		}
+	}
+	console.log(show_chart);
+
+	// 第一引数：canvasのID、第二引数：設定とデータが入ったハッシュ
+	ccchart.init("show_chart", show_chart);
+
 }
 
-// 第一引数：canvasのID、第二引数：設定とデータが入ったハッシュ
-ccchart.init("show_chart", show_chart);
-
-}
-
-
-getCSV(); //最初に実行される
-///////////////////////////////////////////
 

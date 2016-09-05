@@ -50,8 +50,8 @@ readValue();
 
 
 /////////////////
-// add corntab
+// add corntab (crontab -e)
 /////////////////
 // #save temp (every 10 min.)
-// */10 * * * * /home/pi/test-pg/thermometer_madt7410/get_temperature.js
+// */10 * * * * /usr/local/bin/node /home/pi/test-pg/thermometer_madt7410/get_temperature.js
 

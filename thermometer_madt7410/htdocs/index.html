@@ -1,6 +1,50 @@
-<script type="text/javascript" language="javascript"  src="./ccchart.js" charset="utf-8"></script>
+<html>
+	<head>
+		<title>温度グラフ</title>
+		<meta charse="utf-8" />
 
-<canvas id="show_chart"></canvas>
+		<!-- グラフ描画ライブラリ ccchart -->
+		<script type="text/javascript" language="javascript"  src="./ccchart.js" charset="utf-8"></script>
 
-<script type="text/javascript" language="javascript"  src="./show_data.js" charset="utf-8"></script>
+		<!-- 表示対象日付の取得 / グラフ描画 -->
+		<script type="text/javascript" language="javascript"  src="./show_data.js" charset="utf-8"></script>
+	</head>
+
+	<body onLoad="showTargetDate();getCSV(null)">
+		<center><h1>温度グラフ</h1></center>
+		<hr>
+		<form name="targetDate">
+			<table>
+				<tr>
+					<td>対象日：</td>
+					<td>
+						<select name="target_date">
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<td>表示数：</td>
+					<td>対象日から過去
+						<select name="target_range">
+						</select>
+						日分
+					</td>
+					<!--
+					<td>(「基準日」を含む)</td>
+					-->
+				</tr>
+				<tr>
+					<td></td>
+					<td>
+						<input type="button" value="表示" onclick="showGraph()">
+					</td>
+				</tr>
+			</table>
+		</form>
+		<hr>
+
+		<canvas id="show_chart"></canvas>
+
+	</body>
+</html>
 
